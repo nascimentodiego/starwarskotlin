@@ -1,0 +1,75 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 26
+    defaultConfig {
+        applicationId "br.com.dfn.starwarskotlin"
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            res.srcDirs =
+                    [
+                        'src/main/res/layouts/home',
+                        'src/main/res/layouts/base',
+                        'src/main/res/layouts',
+                        'src/main/res'
+                    ]
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$rootProject.ext.kotlin_version"
+
+    //noinspection GradleCompatible
+    implementation "com.android.support:appcompat-v7:$rootProject.ext.android_appcompat"
+    //noinspection GradleCompatible
+    implementation "com.android.support:recyclerview-v7:$rootProject.ext.android_appcompat"
+    implementation "com.android.support.constraint:constraint-layout:$rootProject.ext.constraint_layout"
+    implementation 'com.github.bumptech.glide:glide:4.4.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.4.0'
+
+    //Room
+    implementation "android.arch.persistence.room:runtime:$rootProject.ext.roomVersion"
+    implementation "android.arch.persistence.room:rxjava2:$rootProject.ext.roomVersion"
+    annotationProcessor "android.arch.persistence.room:compiler:$rootProject.ext.roomVersion"
+
+    //Communication
+    implementation "com.squareup.retrofit2:retrofit:$rootProject.ext.retrofit"
+    implementation "com.squareup.retrofit2:converter-gson:$rootProject.ext.converter_gson"
+    implementation "com.google.code.gson:gson:$rootProject.ext.gson"
+    implementation "com.squareup.okhttp3:okhttp:$rootProject.ext.okhttp"
+
+    //RxJava - RxAndroid
+    implementation "io.reactivex.rxjava2:rxjava:$rootProject.ext.rxjava"
+    implementation "io.reactivex.rxjava2:rxandroid:$rootProject.ext.rxandroid"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$rootProject.ext.adapter_rxjava2"
+
+    //Kotlin coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.20'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.20'
+    implementation 'ru.gildor.coroutines:kotlin-coroutines-retrofit:0.8.2'
+
+    //Tests
+    testImplementation "junit:junit:$rootProject.ext.junit"
+    androidTestImplementation "com.android.support.test:runner:$rootProject.ext.runner"
+    androidTestImplementation "com.android.support.test.espresso:espresso-core:$rootProject.ext.espresso_core"
+}

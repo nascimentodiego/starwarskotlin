@@ -14,5 +14,5 @@ interface StarWarsApi {
     fun getFilms(): Observable<ResultFilms>
 
     @GET("people/{id}")
-    fun getCharacter(@Path("id") id: Int): Observable<Character>
+    fun getCharacter(@Path("id") id: String): Observable<Character>
 }

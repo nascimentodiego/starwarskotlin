@@ -26,8 +26,6 @@ class MainActivity : AppCompatActivity(), HomeContracts.View {
         //Any ImageView will have the method loadImage
         imageView.loadImage(applicationContext, "https://cdn-images-1.medium.com/max/1089/1*GNAMTEPpaVZM6S06p3xPBg.jpeg")
         imageView.setOnClickListener { print("Clicou no botão !") }
-        var date:String =  "12/09/2018"
-        var dateFormated = date.formatDate("1231")
     }
 
     override fun onResume() {

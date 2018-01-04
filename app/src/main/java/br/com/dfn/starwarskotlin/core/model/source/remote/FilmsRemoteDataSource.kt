@@ -49,7 +49,6 @@ class FilmsRemoteDataSource : DataSource(), FilmsDataSource<List<Film>> {
     }*/
 
 
-
     override fun onFilmsLoaded(compositeDisposable: CompositeDisposable, success: (p: List<Film>) -> Unit, fail: () -> Unit) {
 
         /*Observable.fromArray(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
@@ -60,39 +59,37 @@ class FilmsRemoteDataSource : DataSource(), FilmsDataSource<List<Film>> {
         // .flatMap({ t -> Observable.just(t) })*/
 
         compositeDisposable.add(
+
                 webService.getFilms()
                         .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
                         .flatMap { filmResults -> Observable.fromIterable(filmResults.results) }
                         .flatMap { film: Film ->
                             val movieObj = Movie(film.title, ArrayList())
                             Observable.zip(
                                     Observable.just(movieObj),
                                     Observable.fromIterable(film.characters)
-                                            .flatMap {characterUrl ->
-                                                webService.getCharacter(Uri.parse(characterUrl).lastPathSegment)}.toList(),
-                                    { movie, characters ->
-                                        movie.characters = characters
+                                            .flatMap { characterUrl ->
+                                                webService.getCharacter(Uri.parse(characterUrl).lastPathSegment)
+                                            }.toList().toObservable(),
+                                    BiFunction<Movie, List<Character>, Movie> { movie, characters ->
+                                        movie.characters.addAll(characters)
                                         movie
                                     }
-                                    )
-                        }
-
-                /*.subscribe(
-                        { films ->
-                            films.results.forEach { Log.d("Main", "onFilmsLoaded/Films: " + it.title) }
-                            success(films.results)
+                            )
+                        }.subscribe(
+                        { film ->
+                            Log.d("Main", "Film: " + film.title)
+                            film.characters.forEach { Log.d("Main", "Actor " + it.name) }
+//                    success(films.results)
                         },
                         { t: Throwable -> this.handleError(t) },
-                        { Log.d("Main", "OnComplete") })*/
-
+                        { Log.d("Main", "OnComplete") })
         )
     }
 
     class MeuNumber(var number: Int, var msg: String)
 
-    class Movie(var title: String, var characters: ArrayList<Person>)
-    class Person(var name: String, var gender:String)
+    class Movie(var title: String, var characters: ArrayList<Character>)
 
     override fun handleError(t: Throwable) {
         super.handleError(t)

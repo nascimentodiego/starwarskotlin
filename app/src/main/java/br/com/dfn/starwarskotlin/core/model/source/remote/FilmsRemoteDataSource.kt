@@ -1,5 +1,6 @@
 package br.com.dfn.starwarskotlin.core.model.source.remote
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import br.com.dfn.starwarskotlin.core.model.Character
@@ -12,74 +13,58 @@ import io.reactivex.functions.BiFunction
 import io.reactivex.functions.Consumer
 import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
+import br.com.dfn.starwarskotlin.core.model.source.cache.CacheProviders
+import io.rx_cache2.DynamicKey
+import io.victoralbertos.jolyglot.GsonSpeaker
+import io.rx_cache2.internal.RxCache
 
 
 /**
  * Created by diegonascimento on 18/12/17.
  */
-class FilmsRemoteDataSource : DataSource(), FilmsDataSource<List<Film>> {
+class FilmsRemoteDataSource(var mContext: Context) : DataSource(), FilmsDataSource<List<Film>> {
 
     private val webService = ServiceClient.retrofit!!.create(StarWarsApi::class.java)
-
-/*    fun loadMoviesFull(): Observable<Movie> {
-        return service.listMovies()
-                .flatMap { filmResults -> Observable.from(filmResults.results) }
-                .flatMap { film ->
-                    val movieObj = Movie(film.title, film.episodeId, ArrayList<Character>())
-                    Observable.zip(
-                            Observable.just(movieObj),
-                            Observable.from(film.personUrls)
-                                    .flatMap { personUrl ->
-                                        Observable.concat(
-                                                getCache(personUrl),
-                                                service.loadPerson(Uri.parse(personUrl).lastPathSegment)
-                                                        .doOnNext { person ->
-                                                            peopleCache.put(personUrl, person)
-                                                        }
-                                        ).first()
-                                    }
-                                    .map { person ->
-                                        Character(person!!.name, person.gender)
-                                    }.toList(),
-                            { movie, characters ->
-                                movie.characters.addAll(characters)
-                                movie
-                            })
-                }
-    }*/
 
 
     override fun onFilmsLoaded(compositeDisposable: CompositeDisposable, success: (p: List<Film>) -> Unit, fail: () -> Unit) {
 
-        /*Observable.fromArray(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-                .flatMap {t -> Observable.just(t)}
-                .map { t -> MeuNumber(t, " È Par ") }
-//                .subscribe( ->   })
-                .subscribe({ t: MeuNumber -> Log.d("Main", "T = " + t.number + " " + t.msg) }, { t: Throwable -> this.handleError(t) }, { Log.d("Main", "OnComplete") })
-        // .flatMap({ t -> Observable.just(t) })*/
+
+        var cacheProviders = RxCache.Builder()
+                .setMaxMBPersistenceCache(50)
+                .persistence(mContext.getFilesDir(), GsonSpeaker())
+                .using(CacheProviders::class.java)
+
+
 
         compositeDisposable.add(
 
-                webService.getFilms()
+
+                cacheProviders.getFilms(webService.getFilms())
                         .subscribeOn(Schedulers.io())
+//                        .observeOn(AndroidSchedulers.mainThread())
                         .flatMap { filmResults -> Observable.fromIterable(filmResults.results) }
                         .flatMap { film: Film ->
                             val movieObj = Movie(film.title, ArrayList())
+
                             Observable.zip(
                                     Observable.just(movieObj),
                                     Observable.fromIterable(film.characters)
                                             .flatMap { characterUrl ->
-                                                webService.getCharacter(Uri.parse(characterUrl).lastPathSegment)
+                                                cacheProviders.getCharacter(webService.getCharacter(Uri.parse(characterUrl).lastPathSegment), DynamicKey(Uri.parse(characterUrl).lastPathSegment))
                                             }.toList().toObservable(),
                                     BiFunction<Movie, List<Character>, Movie> { movie, characters ->
-                                        movie.characters.addAll(characters)
-                                        movie
+                                        movie.apply {
+                                            this.characters.addAll(characters)
+                                            //2 - Planetas
+                                            //3 - 
+                                        }
                                     }
                             )
                         }.subscribe(
-                        { film ->
-                            Log.d("Main", "Film: " + film.title)
-                            film.characters.forEach { Log.d("Main", "Actor " + it.name) }
+                        { movie ->
+                            Log.d("Main", "Film: " + movie.title)
+                            movie.characters.forEach { Log.d("Main", "Actor " + it.name) }
 //                    success(films.results)
                         },
                         { t: Throwable -> this.handleError(t) },

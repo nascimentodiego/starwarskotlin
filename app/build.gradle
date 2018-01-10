@@ -63,6 +63,11 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxandroid:$rootProject.ext.rxandroid"
     implementation "com.squareup.retrofit2:adapter-rxjava2:$rootProject.ext.adapter_rxjava2"
 
+    //RxCache
+    implementation "com.github.VictorAlbertos.RxCache:runtime:1.8.3-2.x"
+    // To use Gson
+    implementation 'com.github.VictorAlbertos.Jolyglot:gson:0.0.4'
+
     //Kotlin coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.20'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.20'

@@ -12,7 +12,7 @@ import io.reactivex.disposables.CompositeDisposable
  */
 class HomePresenter(private var ctx: Context, private var mView: HomeContracts.View) : HomeContracts.Presenter {
 
-    var repository = FilmsRemoteDataSource()
+    var repository = FilmsRemoteDataSource(ctx)
     var mCompositeDisposable = CompositeDisposable()
 
     //Test
